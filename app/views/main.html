@@ -1,0 +1,15 @@
+<div class="hero-unit">
+  <h2>Welcome to FrameWorthy</h2>
+  <p>Create a new frame to share photos your distant friends and family.  Skip the noisy social network feed and let the Grandparents see the latest photos you've taken of your kids.</p>
+  <h3 ng-show="user.uid">Your Frames</h3>
+  <ul ng-show"user.uid">
+      <li ng-repeat="f in frames">
+      <a href="#/frame/{{f.id}}" ng-bind="f.description"></a>
+      </li>
+  </ul>
+  <p ng-hide="frames.$getIndex().length">You have no frames yet.  Create one :)</p>
+  <button ng-click="logIn()" ng-show="!user.uid">Log In</button>
+  <input placeholder="Frame description" class="frame-description-input" type="text" ng-model="newFrameName" ng-show="user.uid" />
+  <button ng-click="createNewFrame()" ng-show="user.uid">Create new Frame</button>
+  <span ng-bind="newID"></span>
+</div>
