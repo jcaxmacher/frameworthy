@@ -119,4 +119,8 @@ angular.module('frameworthyApp')
             scope: 'email'
         });
     };
+
+    $scope.process = function(element) {
+        console.log(element.files);
+    };
   });

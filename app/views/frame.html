@@ -1,10 +1,16 @@
-<div class="hero-unit">
+  <!--
   <h2>Welcome to FrameWorthy</h2>
   <p ng-bind="frameDescription"></p>
   <ul>
       <li ng-repeat="photo in photos">
         <span ng-bind="photo.caption"></span> - 
+        <img class="images" ng-src="{{photo.data}}" />
       </li>
   </ul>
-</div>
-
+  -->
+  <p ng-show="user">
+    <file-input on-change="process(element)" />
+  </p>
+  <div id="gallery">
+    <img src="images/486.GIF" />
+  </div>
