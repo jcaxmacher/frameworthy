@@ -2,7 +2,7 @@
   <h2>Welcome to FrameWorthy</h2>
   <p>Create a new frame to share photos your distant friends and family.  Skip the noisy social network feed and let the Grandparents see the latest photos you've taken of your kids.</p>
   <h3 ng-show="user.uid">Your Frames</h3>
-  <ul ng-show"user.uid">
+  <ul ng-show="user.uid">
       <li ng-repeat="f in frames">
       <a href="#/frame/{{f.id}}" ng-bind="f.description"></a>
       </li>
