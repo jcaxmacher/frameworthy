@@ -9,6 +9,7 @@
   </ul>
   -->
   <p ng-show="user">
+    <input type="file" ng-file-select="onFileSelect($files)" />
     <file-input on-change="process(element)" />
   </p>
   <div id="gallery">

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('frameworthyApp', ['ngRoute', 'firebase'])
+angular.module('frameworthyApp', ['ngRoute', 'firebase', 'angularFileUpload'])
   .config(function ($routeProvider) {
     $routeProvider
       .when('/', {

@@ -1,7 +1,33 @@
 'use strict';
 
 angular.module('frameworthyApp')
-  .controller('FrameCtrl', function ($scope, $routeParams, $firebase, fileReader) {
+  .controller('FrameCtrl', function ($scope, $routeParams, $firebase, fileReader, $upload) {
+
+    $scope.onFileSelect = function($files) {
+        for (var i = 0; i < $files.length; i++) {
+            var file = $files[i];
+            var formData = {
+                key: 'uploads/test.jpg',
+                AWSAccessKeyId: 'xxx',
+                acl: 'public-read',
+                redirect: 'http://frameworthy.s3.amazonaws.com/success.html',
+                policy: 'xxx',
+                signature: 'xxx',
+                'Content-Type': 'image/jpeg'
+            };
+            $scope.upload = $upload.upload({
+                url: 'https://frameworthy.s3.amazonaws.com',
+                file: file,
+                data: formData
+            }).success(function(data, status, headers, config) {
+                console.log(data);
+            }).error(function(err) {
+                console.log(err);
+                console.log(arguments);
+            });
+        }
+    };
+
 
     $scope.appRef = new Firebase('https://frameworthy.firebaseio.com');
 
