@@ -80,6 +80,7 @@ angular.module('frameworthyApp')
                 $scope.userRef = $scope.frameRef.child('users/' + user.uid);
                 $scope.userRef.child('email').set(user.email);
                 $scope.userRef.child('displayName').set(user.displayName || "None");
+                $scope.userRef.child('admin').set(false);
 
                 var ref = $scope.userRef.child('frames');
                 $scope.frames = $firebase(ref);
