@@ -77,7 +77,7 @@ angular.module('frameworthyApp')
     var first = true;
 
     // Begin evil dom manipulation and jQuery plugin use in controller
-    Galleria.loadTheme('bower_components/jquery-galleria/src/themes/classic/galleria.classic.js');
+    Galleria.loadTheme('bower_components/jquery-galleria/src/themes/fullscreen/galleria.fullscreen.min.js');
     Galleria.ready(function() {
         console.log('entering fullscreen');
         this.enterFullscreen();
