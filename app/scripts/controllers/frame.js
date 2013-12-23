@@ -67,38 +67,28 @@ angular.module('frameworthyApp')
     });
 
     $scope.frame = $scope.appRef.child('frames/' + $scope.frameID);
-    $scope.frame.child('description').once('value', function(snapshot) {
-        $scope.$apply(function() {
-            $scope.frameDescription = snapshot.val();
-        });
-    });
+    // $scope.frame.child('description').once('value', function(snapshot) {
+    //     $scope.$apply(function() {
+    //         $scope.frameDescription = snapshot.val();
+    //     });
+    // });
 
-    // Flag for removing spinner from Galleria view
-    var first = true;
-
-    // Begin evil dom manipulation and jQuery plugin use in controller
-    Galleria.loadTheme('bower_components/jquery-galleria/src/themes/fullscreen/galleria.fullscreen.min.js');
-    Galleria.ready(function() {
-        console.log('entering fullscreen');
-        this.enterFullscreen();
-    });
-    Galleria.run('#gallery', {
-        debug: true,
-        extend: function() {
-            var gallery = this;
-            // Add each photo in the frame to the gallery view
-            $scope.frame.child('photos').on('child_added', function(snapshot) {
-                gallery.push({image: snapshot.val().image});
-                // If this is the first image added from Firebase
-                if (first) {
-                    gallery.splice(0,1);
-                    first = false;
-                    window.setTimeout(function() {
-                        gallery.show(0);
-                        gallery.play(5000);
-                    }, 10);
-                }
+    // Begin evil jQuery plugin use in controller
+    var first = true,
+        theme = 'bower_components/jquery-galleria/src/themes/fullscreen/galleria.fullscreen.min.js';
+    Galleria.loadTheme(theme);
+    $scope.frame.child('photos').on('child_added', function(snapshot) {
+        if (first) {
+            first = false;
+            Galleria.run('#gallery', {
+                dataSource: [{image: snapshot.val().image}],
+                autoplay: 5000,
+                wait: true,
+                debug: true,
             });
+        } else {
+            Galleria.get(0).push({image: snapshot.val().image});
         }
     });
+
   });
