@@ -1,35 +1,56 @@
 'use strict';
 
 angular.module('frameworthyApp')
-  .controller('FrameCtrl', function ($scope, $routeParams, $firebase, fileReader, $upload) {
+  .controller('FrameCtrl', function ($q, $scope, $routeParams, $upload, fileHash, s3, fbase) {
+
+    $scope.frameID = $routeParams.id;
+    $scope.appRef = new Firebase(fbase.appURL);
 
     $scope.onFileSelect = function($files) {
         for (var i = 0; i < $files.length; i++) {
-            var file = $files[i];
-            var formData = {
-                key: 'uploads/test.jpg',
-                AWSAccessKeyId: 'xxx',
-                acl: 'public-read',
-                redirect: 'http://frameworthy.s3.amazonaws.com/success.html',
-                policy: 'xxx',
-                signature: 'xxx',
-                'Content-Type': 'image/jpeg'
-            };
-            $scope.upload = $upload.upload({
-                url: 'https://frameworthy.s3.amazonaws.com',
-                file: file,
-                data: formData
-            }).success(function(data, status, headers, config) {
-                console.log(data);
-            }).error(function(err) {
+
+            // Build upload data
+            var file = $files[i],
+                fileName = file.name.split('.'),
+                fileExt = fileName[fileName.length - 1],
+                formData = {
+                    key: s3.key,
+                    acl: s3.acl,
+                    redirect: s3.redirect,
+                    'Content-Type': file.type
+                },
+                // Get SHA256 of file data
+                hashPromise = fileHash.sha256(file),
+                // Grab latest AWS creds from firebase
+                awsCredsPromise = fbase.getAWSCreds();
+
+            $q.all([hashPromise, awsCredsPromise]).then(function(res) {
+                // Unpack results.  No spread :(
+                var hash = res[0],
+                    awsCreds = res[1];
+            
+                // Add additional details to form data
+                formData.AWSAccessKeyId = awsCreds.accessKey;
+                formData.policy = awsCreds.policy;
+                formData.signature = awsCreds.signature;
+                formData.key += hash + '.' + fileExt;
+
+                // Upload file to S3
+                return $upload.upload({
+                    url: s3.bucketURL,
+                    file: file,
+                    data: formData
+                });
+
+            }).then(function() {
+                // Record file upload to Firebase
+                var imageURL = s3.bucketURL + '/' + formData.key;
+                $scope.frame.child('photos').push({caption: "", image: imageURL});
+            }).catch(function(err) {
                 console.log(err);
-                console.log(arguments);
             });
         }
     };
-
-
-    $scope.appRef = new Firebase('https://frameworthy.firebaseio.com');
 
     $scope.auth = new FirebaseSimpleLogin($scope.appRef, function(error, user) {
         if (!error && user) {
@@ -41,15 +62,10 @@ angular.module('frameworthyApp')
                 $scope.userRef = $scope.appRef.child('users/' + user.uid);
                 $scope.userRef.child('email').set(user.email);
                 $scope.userRef.child('displayName').set(user.displayName || "None");
-
-                var ref = $scope.userRef.child('frames');
-                $scope.frames = $firebase(ref);
-
             });
         }
     });
 
-    $scope.frameID = $routeParams.id;
     $scope.frame = $scope.appRef.child('frames/' + $scope.frameID);
     $scope.frame.child('description').once('value', function(snapshot) {
         $scope.$apply(function() {
@@ -57,9 +73,8 @@ angular.module('frameworthyApp')
         });
     });
 
-    // $scope.photos = $firebase($scope.frame.child('photos'));
-
-    $scope.first = true;
+    // Flag for removing spinner from Galleria view
+    var first = true;
 
     // Begin evil dom manipulation and jQuery plugin use in controller
     Galleria.loadTheme('bower_components/jquery-galleria/src/themes/classic/galleria.classic.js');
@@ -73,11 +88,11 @@ angular.module('frameworthyApp')
             var gallery = this;
             // Add each photo in the frame to the gallery view
             $scope.frame.child('photos').on('child_added', function(snapshot) {
-                gallery.push({image: snapshot.val().data});
+                gallery.push({image: snapshot.val().image});
                 // If this is the first image added from Firebase
-                if ($scope.first) {
+                if (first) {
                     gallery.splice(0,1);
-                    $scope.first = false;
+                    first = false;
                     window.setTimeout(function() {
                         gallery.show(0);
                         gallery.play(5000);
@@ -86,11 +101,4 @@ angular.module('frameworthyApp')
             });
         }
     });
-
-    $scope.process = function(element) {
-        fileReader.readAsDataUrl(element.files[0], $scope).then(function(result) {
-            $scope.photos.$add({caption: "", data: result});
-        });
-    };
-
   });
