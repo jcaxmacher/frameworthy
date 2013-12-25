@@ -78,7 +78,7 @@ angular.module('frameworthyApp')
         theme = 'bower_components/jquery-galleria/src/themes/fullscreen/galleria.fullscreen.min.js';
     Galleria.loadTheme(theme);
     $scope.frame.child('photos').on('child_added', function(snapshot) {
-        if (first) {
+        if (first && !($scope.user)) {
             first = false;
             Galleria.run('#gallery', {
                 dataSource: [{image: snapshot.val().image}],
@@ -86,8 +86,9 @@ angular.module('frameworthyApp')
                 wait: true,
                 debug: true,
             });
-        } else {
+        } else if (!($scope.user)) {
             Galleria.get(0).push({image: snapshot.val().image});
+            Galleria.get(0).play(5000);
         }
     });
 
